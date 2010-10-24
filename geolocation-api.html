@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<title>Geolocation API Sample</title>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/base/jquery-ui.css">
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("jquery","1.4.2");google.load("jqueryui", "1.8.2");</script>
+<script type="text/javascript">
+
+$(function(){
+  // geolocationオブジェクトを生成
+  var geolocation;
+  try {
+    if(typeof(navigator.geolocation) == 'undefined'){
+      geolocation = google.gears.factory.create('beta.geolocation');
+    } else {
+      geolocation = navigator.geolocation;
+    }
+  } catch(e) {}
+  if (!geolocation) {
+    alert('位置情報は利用できません');
+    return;
+  }
+
+  var watchId;
+  // 位置情報取得に成功したとき呼ばれるcallback関数
+  var success = function (position) {
+    var result = $('<tr>' + 
+      '<td>' + position.coords.latitude + '</td>' +
+      '<td>' + position.coords.longitude + '</td>' +
+      '<td>' + position.coords.altitude + '</td>' +
+      '<td>' + position.coords.accuracy + '</td>' +
+      '<td>' + position.coords.altitudeAccuracy + '</td>' +
+      '<td>' + position.coords.heading + '</td>' +
+      '<td>' + position.coords.speed + '</td>' +
+      '<td>' + position.timestamp + '</td>' +
+      '</tr>');
+    $('#result').append(result);
+  } 
+  // 位置情報取得に失敗したとき呼ばれるcallback関数
+  var error = function (error) {
+    var result = $('<tr>' + 
+      '<td>' + error.code + '</td>' +
+      '<td>' + error.message + '</td>' +
+      '</tr>');
+    $('#errorresult').append(result);
+  }
+  // 位置情報取得時に設定するオプション
+  var option = {
+    enableHighAccuracy: true,
+    timeout : 10000, 
+    maximumAge: 0
+  };  
+  // 位置情報取得を開始する関数
+  function start() {
+    watchId = geolocation.watchPosition(success, error, option);
+    $('#controler').attr('value','stop');
+  }
+  // 位置情報取得を停止する関数
+  function stop() {
+    geolocation.clearWatch(watchId);
+    $('#controler').attr('value','start');
+  } 
+  // ボタンに開始/停止関数を紐付け 
+  $('#controler').toggle(start, stop);
+});
+</script>
+</head>
+<body>
+<form><input type="button" value="start" id="controler"></form>
+<h2>取得成功</h2>
+<table id="result">
+  <tbody>
+  <tr>
+    <th>latitude</th>
+    <th>longitude</th>
+    <th>altitude</th>
+    <th>accuracy</th>
+    <th>altitudeAccuracy</th>
+    <th>heading</th>
+    <th>speed</th>
+    <th>timestamp</th>
+  </tr>
+  </tbody>
+</table>
+<h2>取得失敗</h2>
+<table id="errorresult">
+  <tbody>
+  <tr>
+    <th>code</th>
+    <th>message</th>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
