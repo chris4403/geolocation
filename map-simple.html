@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<title>Map Sample</title>
+<style type="text/css">
+html { height: 100% }
+body { height: 100%; margin: 0px; padding: 0px }
+#map { width : 100%; height : 100%}
+</style>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+<script type="text/javascript">
+function init(){
+  var myOptions = {
+    zoom: 8,
+    center: new google.maps.LatLng(35.68,139.76),
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  };
+  var map = new google.maps.Map(document.getElementById("map"),myOptions); 
+}
+</script>
+</head>
+<body onload="init()">
+<div id="map"></div>
+</body>
+</html>
