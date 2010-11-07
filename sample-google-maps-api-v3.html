@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<title>Google Maps API V3 Sample</title>
+<link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.2/themes/base/jquery-ui.css">
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">google.load("jquery","1.4.2");google.load("jqueryui", "1.8.2");</script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script> 
+<script type="text/javascript">
+
+var mapTypeStyleFeatureTypeData = [
+["administrative","Apply the rule to administrative areas."],
+["administrative.country","Apply the rule to countries."],
+["administrative.land_parcel","Apply the rule to land parcels."],
+["administrative.locality","Apply the rule to localities."],
+["administrative.neighborhood","Apply the rule to neighborhoods."],
+["administrative.province","Apply the rule to provinces."],
+["all","Apply the rule to all selector types."],
+["landscape","Apply the rule to landscapes."],
+["landscape.man_made","Apply the rule to man made structures."],
+["landscape.natural","Apply the rule to natural features."],
+["poi","Apply the rule to points of interest."],
+["poi.attraction","Apply the rule to attractions for tourists."],
+["poi.business","Apply the rule to businesses."],
+["poi.government","Apply the rule to government buildings."],
+["poi.medical","Apply the rule to emergency services (hospitals, pharmacies, police, doctors, etc)."],
+["poi.park","Apply the rule to parks."],
+["poi.place_of_worship","Apply the rule to places of worship, such as church, temple, or mosque."],
+["poi.school","Apply the rule to schools."],
+["poi.sports_complex","Apply the rule to sports complexes."],
+["road","Apply the rule to all roads."],
+["road.arterial","Apply the rule to arterial roads."],
+["road.highway","Apply the rule to highways."],
+["road.local","Apply the rule to local roads."],
+["transit","Apply the rule to all transit stations and lines."],
+["transit.line","Apply the rule to transit lines."],
+["transit.station","Apply the rule to all transit stations."],
+["transit.station.airport","Apply the rule to airports."],
+["transit.station.bus","Apply the rule to bus stops."],
+["transit.station.rail","Apply the rule to rail stations."],
+["water","Apply the rule to bodies of water."]
+];
+var map;
+var changeMapEventId;
+function changeMap() {
+  clearTimeout(changeMapEventId);
+  changeMapEventId = setTimeout(_changeMap,500);
+}
+function _changeMap() {
+  var trs = $('#control tr.row');
+  var style = [];
+  trs.each(function() {
+      if($('input.use:checked',this).size()) {
+         var obj = {};
+         obj.featureType = $('span.itemname',this).text();
+         obj.elementType = "all";
+         var stylers = [];
+         stylers.push({visibility: $('select.visibility',this).val()});
+         stylers.push({invert_lightness: ($('select.invert_lightness',this).val() == 'true') ? true : false});
+         stylers.push({gamma: $('input.gamma',this).val()});
+         stylers.push({lightness: $('input.lightness',this).val()});
+         stylers.push({saturation: $('input.saturation',this).val()});
+         if ($('input.hue', this).val()) stylers.push({hue : $('input.hue',this).val()});
+         obj.stylers = stylers;
+         style.push(obj);
+      }
+  });
+  var customStyle = new google.maps.StyledMapType(style, { map: map, name: "custom" });
+  map.mapTypes.set("custom", customStyle);
+  map.setMapTypeId("custom");
+}
+function setUpRow(row, data) {
+    $('input.use',row).removeAttr("checked").click(changeMap); 
+    $('span.itemname',row).text(data[0]); 
+    $('select.etype',row).change(changeMap); 
+    $('select.invert_lightness',row).change(changeMap);
+    $('select.visibility',row).change(changeMap);
+    $('div.gamma',row).slider({
+      range: "min",
+      value: 1.0,
+      min: 0.01,
+      max: 10,
+      step: 0.01,
+      slide: function(event, ui) {
+        $("input.gamma", row).val(ui.value);
+        changeMap();
+      }
+    });
+    $('div.lightness',row).slider({
+      range: "min",
+      value: 0,
+      min: -100,
+      max: 100,
+      step: 1,
+      slide: function(event, ui) {
+        $("input.lightness",row).val(ui.value);
+        changeMap();
+      }
+    });
+    $('div.saturation',row).slider({
+      range: "min",
+      value: 0,
+      min: -100,
+      max: 100,
+      step: 1,
+      slide: function(event, ui) {
+        $("input.saturation",row).val(ui.value);
+        changeMap();
+      }
+    });
+    //$('input.hue',row).ColorPicker({flat: true});
+  return row;
+}
+
+$(function(){
+  var myOptions = {
+    zoom: 17,
+    mapTypeControl : true,
+    mapTypeId: google.maps.MapTypeId.ROADMAP,
+
+  };
+  map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+  map.setCenter(new google.maps.LatLng('35.0036','135.759'));
+  var control = $('#control');
+  for (var i = 0, len = mapTypeStyleFeatureTypeData.length ; i < len ; i++) {
+    var row = $('#base').clone().removeAttr('id');
+    var data = mapTypeStyleFeatureTypeData[i];
+    row = setUpRow(row,data); 
+    control.append(row);
+  }
+  $('#base').remove();
+});
+</script>
+</head>
+<body>
+  <div id="map_canvas" style="width:100%;height:300px;background:#efefef;"></div>
+  <table>
+    <tbody id="control">
+      <tr>
+        <td> </td>
+        <td>name</td>
+        <td>Element Type</td>
+        <td>gamma</td>
+        <td>hue</td>
+        <td>invert_lightness</td>
+        <td>lightness</td>
+        <td>saturation</td>
+        <td>visibility</td>
+      </tr>
+      <tr id="base" class="row">
+        <td><input type="checkbox" class="use" ></td>
+        <td><span class="itemname">name</span></td>
+        <td>
+          <select class="etype">
+            <option value="all">all</option>
+            <option value="geometry">geometry</option>
+            <option value="labels">labels</option>
+          </select>
+        </td>
+        <td><div class="gamma" style="width:100px;"></div><input type="hidden" class="gamma" value="1.0"></td>
+        <td><input type="text" class="hue"></td>
+        <td>
+          <select class="invert_lightness">
+            <option value="true">true</option>
+            <option value="false">false</option>
+          </select>
+        </td>
+        <td><div class="lightness" style="width:100px;"></div><input type="hidden" class="lightness" value="1.0"></td>
+        <td><div class="saturation" style="width:100px;"></div><input type="hidden" class="saturation" value="1.0"></td>
+        <td>
+          <select class="visibility">
+            <option value="on">on</option>
+            <option value="off">off</option>
+            <option value="simplified">simplified</option>
+          </select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</body>
+</html>
